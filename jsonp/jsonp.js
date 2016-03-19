@@ -1,25 +1,38 @@
-d3.jsonp = function (url, callback) {
-  function rand() {
-    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-      c = '', i = -1;
-    while (++i < 15) c += chars.charAt(Math.floor(Math.random() * 52));
-    return c;
-  }
+(function(root, factory) {
+	if (typeof define === 'function' && define.amd) {
+		// AMD. Register as an anonymous module with d3 as a dependency.
+		define(['d3'], factory)
+	} else {
+		// Browser global.
+		factory(root.d3)
+	}
+}(this, function(d3) {
 
-  function create(url) {
-    var e = url.match(/callback=d3.jsonp.(\w+)/),
-      c = e ? e[1] : rand();
-    d3.jsonp[c] = function(data) {
-      callback(data);
-      delete d3.jsonp[c];
-      script.remove();
-    };
-    return 'd3.jsonp.' + c;
-  }
+	d3.jsonp = function(url, callback) {
+		function rand() {
+			var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+				c = '',
+				i = -1;
+			while (++i < 15) c += chars.charAt(Math.floor(Math.random() * 52));
+			return c;
+		}
 
-  var cb = create(url),
-    script = d3.select('head')
-    .append('script')
-    .attr('type', 'text/javascript')
-    .attr('src', url.replace(/(\{|%7B)callback(\}|%7D)/, cb));
-};
+		function create(url) {
+			var e = url.match(/callback=d3.jsonp.(\w+)/),
+				c = e ? e[1] : rand();
+			d3.jsonp[c] = function(data) {
+				callback(data);
+				delete d3.jsonp[c];
+				script.remove();
+			};
+			return 'd3.jsonp.' + c;
+		}
+
+		var cb = create(url),
+			script = d3.select('head')
+				.append('script')
+				.attr('type', 'text/javascript')
+				.attr('src', url.replace(/(\{|%7B)callback(\}|%7D)/, cb));
+	};
+	return d3.jsonp;
+}));
